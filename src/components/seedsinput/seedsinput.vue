@@ -104,11 +104,13 @@
 <style lang="scss" src="./seedsinput.sass"></style>
 
 <script>
+// data
 import allSeeds from '../../data/allseeds';
 
 export default {
     props: [
-        'currentSeeds'
+        'currentSeeds',
+        'removedSeed'
     ],
     data() {
         return {
@@ -125,48 +127,68 @@ export default {
             newSeedValueError: '',
         }
     },
+    mounted() {
+        this.checkNewSeedValue() 
+    },
 
     methods: {
 
         checkNewSeedName() {
             // проверка названия вида семян
-
-            for(let seed in this.currentSeeds) {
-                // currentSeeds - содержит имеющиеся на графике виды семян
-                // проверяем, нет ли совпадений с уже выведенными семенами
-                if(this.newSeedName.toLowerCase() === this.currentSeeds[seed].name.toLowerCase()) {
-                    this.newSeedNameError = 'Данный вид семя уже добавлен на график!';
-                    return this.validNewSeedName = false;
+            try{
+                for(let seed in this.currentSeeds) {
+                    // currentSeeds - содержит имеющиеся на графике виды семян
+                    // проверяем, нет ли совпадений с уже выведенными семенами
+                    if(this.newSeedName.toLowerCase() === this.currentSeeds[seed].name.toLowerCase()) {
+                        this.newSeedNameError = 'Данный вид семя уже добавлен на график!';
+                        return this.validNewSeedName = false;
+                    }
                 }
-            }
-            for(let seed in allSeeds) {
-                // allSeeds - содержит в себе все известные виды семян
-                // проверяем не придумал ли пользователь какой-то новый вид
-                if(this.newSeedName.toLowerCase() === allSeeds[seed].toLowerCase()) {
-                    this.newSeedNameError = '';
-                    return this.validNewSeedName = true;
-                }    
-            }
+                for(let seed in allSeeds) {
+                    // allSeeds - содержит в себе все известные виды семян
+                    // проверяем не придумал ли пользователь какой-то новый вид
+                    if(this.newSeedName.toLowerCase() === allSeeds[seed].toLowerCase()) {
+                        this.newSeedNameError = '';
+                        return this.validNewSeedName = true;
+                    }    
+                }
 
-            this.newSeedNameError = 'Данный вид семян не существует!';
-            return this.validNewSeedName = false;            
+                this.newSeedNameError = 'Данный вид семян не существует!';
+                return this.validNewSeedName = false; 
+
+            } catch(error) {
+                console.log('---', 'Error:', error);
+            }
+                     
         },
 
         checkNewSeedValue() {
-            // проверка входных данных на наличие строки(все значения должны быть числа)
-            if( isNaN(+this.newSeedValue2025) || 
+            // проверка входных данных на наличие строки(все значения должны быть числа   
+
+            if( isNaN(+this.newSeedValue2025) ||
                 isNaN(+this.newSeedValue2026) ||
                 isNaN(+this.newSeedValue2027) ||
                 isNaN(+this.newSeedValue2028) ) {
-                this.newSeedValueError = 'Поле должно иметь числовой тип!';
+                this.newSeedValueError = 'Введенные данные иметь числовой тип!';
                 return this.validNewSeedValue = false;
             }
+
+            if( !!this.newSeedValue2025 == false || 
+                !!this.newSeedValue2025 == false || 
+                !!this.newSeedValue2025 == false || 
+                !!this.newSeedValue2025 == false) {
+                this.newSeedValueError = 'Поле не должно быть пустым!';
+                return this.validNewSeedValue = false;
+            }  
+            
             return this.validNewSeedValue = true;
         },
 
         getRandomSeedData() {
             // подставляем случайные значения и случайный вид семян(берем из доступных)
 
+            // обновляем список актуальных семян, чтобы каждый раз туда записывался актуальный массив
+            this.namesOfCurrentSeeds = [];
             this.currentSeeds.map(el => {
                 // запихиваем в namesOfCurrentSeeds имена добавленных на график семян
                 this.namesOfCurrentSeeds.push(el.name);
@@ -174,9 +196,9 @@ export default {
 
             // availableSeeds содержит массив доступных семян "минус" семена на графике
             this.availableSeeds = allSeeds.filter(el => !this.namesOfCurrentSeeds.includes(el));
-            
             if (this.availableSeeds.length === 0) {
                 alert('Доступные для добавления виды семян отсутствуют')
+                return null
             }
             // случайное число, которое будет = одному из 
             // эллементов массива для случайного выбора семян
@@ -201,16 +223,24 @@ export default {
             this.newSeedValue2027 = ''
             this.newSeedValue2028 = ''
         },
+        ucFirst(str) {
+            // форматирует название возвращая первую большой, остальные маленькими
+            if (!str) return str;
+            return str[0].toUpperCase() + str.slice(1);
+        },
 
         sendNewSeedData() {
             // проверяем входные данные и отправляем выше
             this.checkNewSeedName();
-            this.checkNewSeedValue();
+            this.checkNewSeedValue(this.newSeedValue2025);
+            this.checkNewSeedValue(this.newSeedValue2026);
+            this.checkNewSeedValue(this.newSeedValue2027);
+            this.checkNewSeedValue(this.newSeedValue2028);
             if(this.validNewSeedName) {
                 // Если название валидно, отправляем в родительский компонент
                 this.$emit('getNewSeedData', 
                     {
-                        name: this.newSeedName,
+                        name: this.ucFirst(this.newSeedName.toLowerCase()),
                         data: [
                             +this.newSeedValue2025, 
                             +this.newSeedValue2026, 
@@ -238,23 +268,34 @@ export default {
         newSeedValue2025: {  
             handler() {
                 this.checkNewSeedValue()
+                // если был забил пробел, избавимся от него(дублируется для остальных)
+                this.newSeedValue2025 = this.newSeedValue2025.trim()
             }
         },   
         newSeedValue2026: {  
             handler() {
                 this.checkNewSeedValue()
+                this.newSeedValue2026 = this.newSeedValue2026.trim()
             }
         },   
         newSeedValue2027: {  
             handler() {
                 this.checkNewSeedValue()
+                this.newSeedValue2027 = this.newSeedValue2027.trim()
             }
         },   
         newSeedValue2028: {  
             handler() {
                 this.checkNewSeedValue()
+                this.newSeedValue2028 = this.newSeedValue2028.trim()
             }
         },   
+        removedSeed: {
+            handler() {
+                // если удаляем вид, то записываем его в список доступных семян
+                this.availableSeeds.push(this.removedSeed);
+            }
+        },
     },
     
 }

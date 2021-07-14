@@ -17,7 +17,9 @@ export default {
                 colors: [
                     '#42CBFD', '#B4E6CA', '#969AB2', 
                     '#DDDF00', '#24CBE5', '#64E572', 
-                    '#FF9655', '#FFF263', '#6AF9C4'
+                    '#FF9655', '#FFF263', '#6AF9C4', 
+                    '#004634', '#2ab18f', '#281096',
+                    '#80110d', '#c319c9', '#82b12c'
                 ]
             },
             config: {
@@ -84,7 +86,8 @@ export default {
     methods: {
         render() {
             // переотрисовка, если изменился конфиг              
-            this.chart = Highcharts.chart('container', {...this.config})
+            Highcharts.chart('container', {...this.config});
+            Highcharts.setOptions({colors: this.setOptions.colors});
         }
     },
 }

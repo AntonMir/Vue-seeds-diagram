@@ -8,6 +8,7 @@
             <SeedsInput
                 @getNewSeedData="pushNewSeed"
                 :currentSeeds="currentSeeds"
+                :removedSeed="removedSeed"
             />
         </span>
         <SeedsList 
@@ -34,7 +35,8 @@ export default {
     },
     data() {
         return {
-            currentSeeds: baseCurrentSeeds
+            currentSeeds: baseCurrentSeeds,
+            removedSeed: ''
         }
     },
     methods: {
@@ -48,6 +50,7 @@ export default {
             this.currentSeeds = this.currentSeeds.filter(seedEl => {
                return seedEl.name !== name
             });
+            this.removedSeed = name;
         }
     },
 };
