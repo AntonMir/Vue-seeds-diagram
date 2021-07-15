@@ -9,7 +9,7 @@
                 type="text"
                 placeholder="Овес"
                 required
-                v-model="newSeedName"
+                v-model.trim="newSeedName"
             >
             <span v-if="newSeedNameError">
                 <span class="seed-name-input-error">
@@ -31,7 +31,7 @@
                     minlength="1"
                     maxlength="2"
                     pattern="\d+"
-                    v-model="newSeedValue2025"
+                    v-model.trim="newSeedValue2025"
                 >
                 <span class="seed-value-input-error">
                    {{newSeedValueError}}
@@ -48,7 +48,7 @@
                     minlength="1"
                     maxlength="2"
                     pattern="\d+"
-                    v-model="newSeedValue2026"
+                    v-model.trim="newSeedValue2026"
                 >
                 <span class="seed-value-input-error">
                    {{newSeedValueError}}
@@ -65,7 +65,7 @@
                     minlength="1"
                     maxlength="2"
                     pattern="\d+"
-                    v-model="newSeedValue2027"
+                    v-model.trim="newSeedValue2027"
                 >
                 <span class="seed-value-input-error">
                    {{newSeedValueError}}
@@ -82,7 +82,7 @@
                     minlength="1"
                     maxlength="2"
                     pattern="\d+"
-                    v-model="newSeedValue2028"
+                    v-model.trim="newSeedValue2028"
                 >
                 <span class="seed-value-input-error">
                    {{newSeedValueError}}
@@ -186,33 +186,36 @@ export default {
 
         getRandomSeedData() {
             // подставляем случайные значения и случайный вид семян(берем из доступных)
+            try {
+                // обновляем список актуальных семян, чтобы каждый раз туда записывался актуальный массив
+                this.namesOfCurrentSeeds = [];
+                this.currentSeeds.map(el => {
+                    // запихиваем в namesOfCurrentSeeds имена добавленных на график семян
+                    this.namesOfCurrentSeeds.push(el.name);
+                });
 
-            // обновляем список актуальных семян, чтобы каждый раз туда записывался актуальный массив
-            this.namesOfCurrentSeeds = [];
-            this.currentSeeds.map(el => {
-                // запихиваем в namesOfCurrentSeeds имена добавленных на график семян
-                this.namesOfCurrentSeeds.push(el.name);
-            });
+                // availableSeeds содержит массив доступных семян "минус" семена на графике
+                this.availableSeeds = allSeeds.filter(el => !this.namesOfCurrentSeeds.includes(el));
+                if (this.availableSeeds.length === 0) {
+                    alert('Доступные для добавления виды семян отсутствуют')
+                    return null
+                }
+                // случайное число, которое будет = одному из 
+                // эллементов массива для случайного выбора семян
+                let rundNum = Math.floor(Math.random() * this.availableSeeds.length);
 
-            // availableSeeds содержит массив доступных семян "минус" семена на графике
-            this.availableSeeds = allSeeds.filter(el => !this.namesOfCurrentSeeds.includes(el));
-            if (this.availableSeeds.length === 0) {
-                alert('Доступные для добавления виды семян отсутствуют')
-                return null
+                // присваиваем случайное название нового вида семян
+                this.newSeedName = this.availableSeeds[rundNum];
+                // присваиваем случайные числа от 0 до 60 для значений нового вида семян
+                this.newSeedValue2025 = Math.floor(Math.random() * 61);
+                this.newSeedValue2026 = Math.floor(Math.random() * 61);
+                this.newSeedValue2027 = Math.floor(Math.random() * 61);
+                this.newSeedValue2028 = Math.floor(Math.random() * 61);
+
+                this.validNewSeedName = true;
+            } catch(error) {
+                return console.error("Error: ", error)
             }
-            // случайное число, которое будет = одному из 
-            // эллементов массива для случайного выбора семян
-            let rundNum = Math.floor(Math.random() * this.availableSeeds.length);
-
-            // присваиваем случайное название нового вида семян
-            this.newSeedName = this.availableSeeds[rundNum];
-            // присваиваем случайные числа от 0 до 60 для значений нового вида семян
-            this.newSeedValue2025 = Math.floor(Math.random() * 61);
-            this.newSeedValue2026 = Math.floor(Math.random() * 61);
-            this.newSeedValue2027 = Math.floor(Math.random() * 61);
-            this.newSeedValue2028 = Math.floor(Math.random() * 61);
-
-            this.validNewSeedName = true;
         },
 
         clearFormData() {
@@ -223,6 +226,7 @@ export default {
             this.newSeedValue2027 = ''
             this.newSeedValue2028 = ''
         },
+
         ucFirst(str) {
             // форматирует название возвращая первую большой, остальные маленькими
             if (!str) return str;
@@ -268,26 +272,21 @@ export default {
         newSeedValue2025: {  
             handler() {
                 this.checkNewSeedValue()
-                // если был забил пробел, избавимся от него(дублируется для остальных)
-                this.newSeedValue2025 = this.newSeedValue2025.trim()
             }
         },   
         newSeedValue2026: {  
             handler() {
                 this.checkNewSeedValue()
-                this.newSeedValue2026 = this.newSeedValue2026.trim()
             }
         },   
         newSeedValue2027: {  
             handler() {
                 this.checkNewSeedValue()
-                this.newSeedValue2027 = this.newSeedValue2027.trim()
             }
         },   
         newSeedValue2028: {  
             handler() {
                 this.checkNewSeedValue()
-                this.newSeedValue2028 = this.newSeedValue2028.trim()
             }
         },   
         removedSeed: {
